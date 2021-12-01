@@ -954,3 +954,7 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/python,jetbrains,jetbrains+all,jetbrains+iml,pycharm,pycharm+all,pycharm+iml,visualstudio,visualstudiocode,jupyternotebooks
+
+
+# Pre-processed datasets
+data/datasets
