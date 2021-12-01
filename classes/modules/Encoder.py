@@ -4,7 +4,9 @@ from torch import nn, Tensor
 class Encoder(nn.Module):
 
     def __init__(self):
-        pass
+        super().__init__()
+        # TODO: change with appropriate layer
+        self.transformer = nn.Transformer()
 
-    def forward(self, x) -> Tensor:
-        pass
+    def forward(self, x: Tensor) -> Tensor:
+        return self.transformer(x)
