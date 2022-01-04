@@ -18,6 +18,23 @@ import pickle5 as pickle
 
 class Canary(Dataset):
 
+    def __load_files_helper(modality, folder_path, file_names, positive):
+        datapoints = []
+        label = '0' if positive else '1'
+        for positive_label_filename in file_names:
+            dataitem = dict()
+            dataitem['label'] = label
+            pickle_off = open(os.path.join(folder_path, positive_label_filename), "rb")
+            features = pickle.load(pickle_off)
+            if modality == 'sequences':
+                dataitem['features'] = torch.FloatTensor(features.values.astype(np.float32))
+            elif modality == 'images':
+                pass
+            else:
+                pass
+            datapoints.append(dataitem)
+        return datapoints
+
     # Assume the dataset is pre-processed, use the data from Matteo's pre-processed folder
     def __init__(self, task='cookie_theft', modality="sequences", augmented=True):
         self.modality = modality
@@ -37,28 +54,18 @@ class Canary(Dataset):
         if '.DS_Store' in self.negative_label_filenames: 
             self.negative_label_filenames.remove('.DS_Store')
 
-        # Q: should we treat each file 'HA-0002-1.pkl' as an item of dataset or each row in it :) ?
+        # Each file, e.g. 'HA-0002-1.pkl' is an item of the dataset
         self.datapoints = []
-        for positive_label_filename in self.positive_label_filenames:
-            dataitem = dict()
-            dataitem['label'] = '0'
-            pickle_off = open(os.path.join(positive_label_folder_path, positive_label_filename), "rb")
-            features = pickle.load(pickle_off)
-            dataitem['features'] = torch.FloatTensor(features.values.astype(np.float32))
-            self.datapoints.append(dataitem)
-        for negative_label_filename in self.negative_label_filenames:
-            dataitem = dict()
-            dataitem['label'] = '1'
-            pickle_off = open(os.path.join(negative_label_folder_path, negative_label_filename), "rb")
-            features = pickle.load(pickle_off)
-            dataitem['features'] = torch.FloatTensor(features.values.astype(np.float32))
-            self.datapoints.append(dataitem)
+        positive_data_points = self.__load_files_helper(modality, positive_label_folder_path, self.positive_label_filenames, True)
+        negative_data_points = self.__load_files_helper(modality, negative_label_folder_path, self.negative_label_filenames, False)
+        self.datapoints.append(positive_data_points)
+        self.datapoints.append(negative_data_points)
 
     def __len__(self):
         return self.datapoints.len
 
     def __getitem__(self, idx: int) -> Tuple:
-        # return a dictionary of lable (0/1) and eye-tracking features for each item in the database
+        # return a dictionary of lable (0/1) and eye-tracking features for each participant in the database
         return self.datapoints[idx]
 
 dataset = Canary()
