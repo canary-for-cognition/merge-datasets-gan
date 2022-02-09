@@ -1,14 +1,17 @@
-from typing import Tuple
+# from typing import Tuple
 import os
+from classes.data.DataUtil import load_files_helper
+import pickle5 as pickle # have to use pickle5, otherwise error "unsupported pickle protocol: 5" would be thrown
 import numpy as np
-import torch
+# from classes.data.DataUtil import load_files_helper
 from torch.utils.data import Dataset
-import pickle5 as pickle
 
 # pandas 1.0.1 doesn't work, "pip install --upgrade pandas"
 # fname = 'HA-0002-1.pkl'
 # eye_tracking_columns = data.columns
 # print(eye_tracking_columns) 
+
+# 18 features in total for the eye-tracking sequences dataset, listed below:
 """
 ['GazePointLeftX (ADCSpx)', 'GazePointLeftY (ADCSpx)','GazePointRightX (ADCSpx)', 'GazePointRightY (ADCSpx)',
 'GazePointX (ADCSpx)', 'GazePointY (ADCSpx)', 'GazePointX (MCSpx)', 'GazePointY (MCSpx)', 
@@ -19,7 +22,7 @@ import pickle5 as pickle
 class Canary(Dataset):
 
     # Assume the dataset is pre-processed, use the data from Matteo's pre-processed folder
-    def __init__(self, task='cookie_theft', modality="sequences", augmented=True):
+    def __init__(self, sequence_length, task='cookie_theft', modality="sequences", augmented=True):
         self.modality = modality
         datasets_path = os.path.join(os.path.abspath(__file__ + "/../../"), 'datasets')
         data_type = 'augmented' if augmented else 'base'
@@ -37,29 +40,24 @@ class Canary(Dataset):
         if '.DS_Store' in self.negative_label_filenames: 
             self.negative_label_filenames.remove('.DS_Store')
 
-        # Q: should we treat each file 'HA-0002-1.pkl' as an item of dataset or each row in it :) ?
+        # Each file, e.g. 'HA-0002-1.pkl' is an item of the dataset
         self.datapoints = []
-        for positive_label_filename in self.positive_label_filenames:
-            dataitem = dict()
-            dataitem['label'] = '0'
-            pickle_off = open(os.path.join(positive_label_folder_path, positive_label_filename), "rb")
-            features = pickle.load(pickle_off)
-            dataitem['features'] = torch.FloatTensor(features.values.astype(np.float32))
-            self.datapoints.append(dataitem)
-        for negative_label_filename in self.negative_label_filenames:
-            dataitem = dict()
-            dataitem['label'] = '1'
-            pickle_off = open(os.path.join(negative_label_folder_path, negative_label_filename), "rb")
-            features = pickle.load(pickle_off)
-            dataitem['features'] = torch.FloatTensor(features.values.astype(np.float32))
-            self.datapoints.append(dataitem)
+        
+        positive_data_points = load_files_helper(modality, positive_label_folder_path, self.positive_label_filenames, True, sequence_length)
+        negative_data_points = load_files_helper(modality, negative_label_folder_path, self.negative_label_filenames, False, sequence_length)
+        self.datapoints += positive_data_points
+        self.datapoints += negative_data_points
 
     def __len__(self):
-        return self.datapoints.len
+        return len(self.datapoints)
 
-    def __getitem__(self, idx: int) -> Tuple:
-        # return a dictionary of lable (0/1) and eye-tracking features for each item in the database
+    def __getitem__(self, idx):
+        # return a dictionary of lable (0/1) and eye-tracking features for each participant in the database
         return self.datapoints[idx]
 
-dataset = Canary()
+# dataset = Canary()
+# print(dataset[0]['features'][0])
 # print(dataset[0]['features'].shape)
+# print(len(dataset))
+# print('getcwd:      ', os.getcwd())
+# print('__file__:    ', __file__)

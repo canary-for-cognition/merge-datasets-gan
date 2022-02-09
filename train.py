@@ -9,11 +9,16 @@ from classes.data.DataHandler import DataHandler
 
 
 def main(ns: argparse.Namespace):
-    epochs, dataset_list, folds = ns.epochs, ns.datasets, ns.folds
+    epochs, datasets, folds = ns.epochs, ns.datasets, ns.folds
     path_to_log = os.path.join("logs", str(time.time()))
     os.makedirs(path_to_log)
 
-    experiment_header("Training GAN on datasets: {}".format(dataset_list))
+    dataset_list = datasets.split()
+    print(len(dataset_list))
+    if len(dataset_list) != 2:
+        raise Exception("Exactly 2 datasets should be provided.")
+
+    experiment_header("Training GAN on datasets: {}".format(datasets))
 
     for fold in range(folds):
         print("\t *** FOLD {}/{} ***".format(fold + 1, folds))

@@ -79,3 +79,30 @@ def _print_metrics(metrics: Dict, best_metrics: Dict):
     for mn, mv in metrics.items():
         print((" {} " + "".join(["."] * (15 - len(mn))) + " : {:.4f} (Best: {:.4f})")
               .format(mn.capitalize(), mv, best_metrics[mn]))
+
+from ..classes.data.datasetModels.Canary import Canary
+# import torch
+
+class Util:
+    def __init__(self):
+        pass
+
+# custom weights initialization called on Generator and Discriminator 
+# (DCGAN paper authours specify that all model weights shall be randomly initialized from a Normal distribution with mean=0, stdev=0.02)
+def weights_init(m):
+    classname = m.__class__.__name__
+    print(f'Weights Initialization Step: classname is: {classname}')
+    if classname.find('Conv') != -1:
+        nn.init.normal_()
+
+# If time sequence is too long, training result would not be ideal
+def sample_eye_tracking_sequences(sequence, output_len):
+    seq_len = len(sequence)
+    sample_frequency = seq_len / output_len
+    sampled_sequence = torch.zeros(output_len, sequence.shape[1]) 
+    for i in range(0, output_len, sample_frequency):
+        sampled_sequence[i] = sequence[i]
+    return sampled_sequence
+
+# dataset = data.datasetModels.Canary.Canary() 
+print("123")
