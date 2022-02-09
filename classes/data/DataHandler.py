@@ -16,10 +16,10 @@ class DataHandler:
         test_loader = self.get_loader(train=False, fold=fold)
         return training_loader, test_loader
 
-    def get_loader(self, train: bool, fold: int) -> DataLoader:
+    def get_loader(self, train: bool, fold: int, batch_size=1) -> DataLoader:
         dataset = self.__dataset(self.__dataset_list)
         self._check_empty_set(dataset, train)
-        return DataLoader(dataset, batch_size=1, shuffle=train, num_workers=cpu_count(), drop_last=True)
+        return DataLoader(dataset, batch_size=batch_size, shuffle=train, num_workers=cpu_count(), drop_last=True)
 
     @staticmethod
     def _check_empty_set(dataset: DatasetRandomizer, train: bool):
